@@ -26,9 +26,10 @@
             overflow-y: scroll;
             text-align: left;
         }
-        #message {
+        #message, #username {
             width: 70%;
             padding: 10px;
+            margin-bottom: 5px;
             border: 1px solid #ddd;
             border-radius: 5px;
         }
@@ -43,10 +44,25 @@
         #send:hover {
             background: #0056b3;
         }
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .message.me {
+            background: #d1e7dd;
+            text-align: right;
+        }
+        .message.them {
+            background: #f8d7da;
+        }
     </style>
 </head>
 <body>
     <h1>Private Chat</h1>
+    <div>
+        <input id="username" placeholder="Enter your name" />
+    </div>
     <div id="chat-box"></div>
     <div>
         <input id="message" placeholder="Type a message..." />
@@ -57,7 +73,7 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -75,23 +91,44 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // Send Message
-        document.getElementById('send').addEventListener('click', () => {
-            const message = document.getElementById('message').value;
-            if (message) {
-                const messagesRef = ref(database, 'messages/');
-                push(messagesRef, { message: message });
-                document.getElementById('message').value = ''; // Clear the input
+        // Get references to input fields
+        const usernameInput = document.getElementById('username');
+        const messageInput = document.getElementById('message');
+        const chatBox = document.getElementById('chat-box');
+
+        // Function to display messages
+        const displayMessage = (username, message, isMe) => {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(isMe ? 'me' : 'them');
+            messageElement.textContent = `${username}: ${message}`;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+        };
+
+        // Listen for new messages
+        const messagesRef = ref(database, 'messages/');
+        onValue(messagesRef, (snapshot) => {
+            chatBox.innerHTML = ''; // Clear the chatbox
+            const messages = snapshot.val();
+            const currentUser = usernameInput.value || 'Anonymous';
+            for (let id in messages) {
+                const { username, message } = messages[id];
+                const isMe = username === currentUser;
+                displayMessage(username, message, isMe);
             }
         });
 
-        // Receive Messages
-        const messagesRef = ref(database, 'messages/');
-        onChildAdded(messagesRef, (snapshot) => {
-            const msg = snapshot.val().message;
-            const messageElement = document.createElement('div');
-            messageElement.textContent = msg;
-            document.getElementById('chat-box').appendChild(messageElement);
+        // Send a new message
+        document.getElementById('send').addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            const message = messageInput.value.trim();
+            if (username && message) {
+                push(messagesRef, { username: username, message: message });
+                messageInput.value = ''; // Clear the input field
+            } else {
+                alert('Please enter your name and message!');
+            }
         });
     </script>
 </body>
