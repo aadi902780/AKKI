@@ -51,9 +51,9 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-        import { getDatabase, ref, set, onChildAdded } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
 
-        // Firebase Configuration
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAd1NSmpvfnDBfXkXhYgg_Q6W-9Ou9oycU",
             authDomain: "akki-ad30a.firebaseapp.com",
@@ -74,16 +74,15 @@
             const message = document.getElementById('message').value;
             if (message) {
                 const messagesRef = ref(database, 'messages/');
-                const newMessageRef = messagesRef.push();
-                set(newMessageRef, { message });
+                push(messagesRef, { message: message });
                 document.getElementById('message').value = ''; // Clear the input
             }
         });
 
         // Receive Messages
         const messagesRef = ref(database, 'messages/');
-        onChildAdded(messagesRef, (data) => {
-            const msg = data.val().message;
+        onChildAdded(messagesRef, (snapshot) => {
+            const msg = snapshot.val().message;
             const messageElement = document.createElement('div');
             messageElement.textContent = msg;
             document.getElementById('chat-box').appendChild(messageElement);
