@@ -86,7 +86,7 @@
       margin-right: 10px;
     }
 
-    #message-input button {
+    #message-input button, #voice-note-button {
       background-color: #25d366;
       color: white;
       border: none;
@@ -97,6 +97,7 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      margin-left: 5px;
     }
 
     .message {
@@ -106,6 +107,8 @@
       border-radius: 15px;
       line-height: 1.5;
       animation: fadeIn 0.3s ease-in-out;
+      display: flex;
+      flex-direction: column;
     }
 
     .sent {
@@ -117,6 +120,13 @@
       background-color: #ffffff;
       align-self: flex-start;
       border: 1px solid #ddd;
+    }
+
+    .timestamp {
+      font-size: 12px;
+      color: gray;
+      margin-top: 5px;
+      text-align: right;
     }
 
     @keyframes fadeIn {
@@ -138,6 +148,7 @@
     <div id="message-input">
       <input type="text" id="message" placeholder="Type a message">
       <button id="send-message">➤</button>
+      <button id="voice-note-button">🎤</button>
     </div>
   </div>
 
@@ -167,6 +178,7 @@
     const roomCodeInput = document.getElementById("room-code");
     const messageInput = document.getElementById("message");
     const sendMessageButton = document.getElementById("send-message");
+    const voiceNoteButton = document.getElementById("voice-note-button");
 
     let roomCode = "";
     let username = "";
@@ -188,10 +200,13 @@
         chatBox.innerHTML = "";
         const messages = snapshot.val();
         for (let id in messages) {
-          const { sender, text } = messages[id];
+          const { sender, text, timestamp } = messages[id];
           const messageElement = document.createElement("div");
           messageElement.classList.add("message", sender === username ? "sent" : "received");
-          messageElement.textContent = `${sender}: ${text}`;
+          messageElement.innerHTML = `
+            <span>${text}</span>
+            <span class="timestamp">${timestamp}</span>
+          `;
           chatBox.appendChild(messageElement);
         }
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -203,8 +218,13 @@
       if (!message) return;
 
       const messagesRef = ref(database, `rooms/${roomCode}/messages`);
-      push(messagesRef, { sender: username, text: message });
+      const timestamp = new Date().toLocaleTimeString();
+      push(messagesRef, { sender: username, text: message, timestamp });
       messageInput.value = "";
+    });
+
+    voiceNoteButton.addEventListener("click", () => {
+      alert("Voice note feature coming soon!");
     });
   </script>
 </body>
