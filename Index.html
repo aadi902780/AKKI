@@ -2,9 +2,92 @@
 <html>
 <head>
     <title>Private Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        #chat-box {
+            width: 80%;
+            margin: 20px auto;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            height: 400px;
+            overflow-y: scroll;
+        }
+        #message {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #send {
+            padding: 10px 20px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to Private Chat</h1>
-    <p>This is a private space for you and your girlfriend.</p>
+    <h1>Private Chat</h1>
+    <div id="chat-box"></div>
+    <div>
+        <input id="message" placeholder="Type a message..." />
+        <button id="send">Send</button>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+        import { getDatabase, ref, set, onChildAdded } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAd1NSmpvfnDBfXkXhYgg_Q6W-9Ou9oycU",
+            authDomain: "akki-ad30a.firebaseapp.com",
+            databaseURL: "https://akki-ad30a-default-rtdb.firebaseio.com",
+            projectId: "akki-ad30a",
+            storageBucket: "akki-ad30a.firebasestorage.app",
+            messagingSenderId: "875707179283",
+            appId: "1:875707179283:web:5d9bd54a23c22e65db3ae6",
+            measurementId: "G-Z5XH4PJTRG"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Send Message
+        document.getElementById('send').addEventListener('click', () => {
+            const message = document.getElementById('message').value;
+            if (message) {
+                const messagesRef = ref(database, 'messages/');
+                const newMessageRef = messagesRef.push();
+                set(newMessageRef, { message });
+                document.getElementById('message').value = ''; // Clear the input
+            }
+        });
+
+        // Receive Messages
+        const messagesRef = ref(database, 'messages/');
+        onChildAdded(messagesRef, (data) => {
+            const msg = data.val().message;
+            const messageElement = document.createElement('div');
+            messageElement.textContent = msg;
+            document.getElementById('chat-box').appendChild(messageElement);
+        });
+    </script>
 </body>
 </html>
