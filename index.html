@@ -3,102 +3,174 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AKKI - Private Chat</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <title>AKKI Chat</title>
   <style>
+    /* WhatsApp-Themed Styles */
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Arial', sans-serif;
+      background: url('https://i.imgur.com/oS29tW9.jpg') no-repeat center center fixed;
+      background-size: cover;
       margin: 0;
       padding: 0;
-      background-color: #f0f2f5;
-    }
-    header {
-      background-color: #075E54;
-      color: white;
-      padding: 10px 15px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 20px;
-    }
-    header h1 small {
-      font-size: 12px;
-      color: #d1d1d1;
-    }
-    .chat-container {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 60px);
-      overflow: hidden;
+      height: 100vh;
+      color: #000;
     }
-    .messages {
-      flex-grow: 1;
-      overflow-y: auto;
+
+    header {
+      background-color: #25d366;
+      color: white;
       padding: 15px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
     }
-    .message {
-      margin-bottom: 10px;
+
+    #room-section {
+      flex: 1;
       display: flex;
-      align-items: flex-start;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
-    .message.sent {
-      justify-content: flex-end;
-    }
-    .message-content {
-      max-width: 70%;
+
+    #room-section input, #room-section button {
+      width: 80%;
       padding: 10px;
-      border-radius: 8px;
-      position: relative;
-      background-color: #dcf8c6;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
     }
-    .message.received .message-content {
-      background-color: white;
+
+    #room-section button {
+      background-color: #25d366;
+      color: white;
+      border: none;
+      cursor: pointer;
     }
-    .message-content small {
-      display: block;
-      font-size: 10px;
-      color: gray;
-      text-align: right;
+
+    #chat-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px 10px 0 0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     }
-    .typing-area {
+
+    #chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      background-color: #ece5dd;
+    }
+
+    #message-input {
       display: flex;
       align-items: center;
       padding: 10px;
-      background-color: white;
-      border-top: 1px solid #ccc;
+      background: #f0f0f0;
+      border-top: 1px solid #ddd;
     }
-    .typing-area input {
-      flex-grow: 1;
+
+    #message-input input {
+      flex: 1;
       padding: 10px;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
       border-radius: 20px;
-      outline: none;
+      margin-right: 10px;
     }
-    .typing-area button {
-      background-color: #075E54;
-      border: none;
+
+    #message-input button {
+      background-color: #25d366;
       color: white;
-      padding: 10px 15px;
+      border: none;
       border-radius: 50%;
-      margin-left: 10px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
     }
-    .typing-area button i {
-      font-size: 16px;
+
+    #voice-note-button {
+      background-color: #34b7f1;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-right: 5px;
+    }
+
+    .message {
+      margin: 10px 0;
+      padding: 10px 15px;
+      max-width: 80%;
+      border-radius: 15px;
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease-in-out;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sent {
+      background-color: #dcf8c6;
+      align-self: flex-end;
+    }
+
+    .received {
+      background-color: #ffffff;
+      align-self: flex-start;
+      border: 1px solid #ddd;
+    }
+
+    .timestamp {
+      font-size: 12px;
+      color: gray;
+      margin-top: 5px;
+      text-align: right;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
+</head>
+<body>
+  <header>AKKI</header>
+  <div id="room-section">
+    <input type="text" id="username" placeholder="Enter your name">
+    <input type="text" id="room-code" placeholder="Enter Room Code">
+    <button id="join-room">Join Room</button>
+  </div>
+
+  <div id="chat-section" style="display:none;">
+    <div id="chat-box"></div>
+    <div id="message-input">
+      <button id="voice-note-button">🎤</button>
+      <input type="text" id="message" placeholder="Type a message">
+      <button id="send-message">➤</button>
+    </div>
+  </div>
+
+  <!-- Firebase and Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-messaging.js";
-    import { getDatabase, ref, push, onChildAdded, set } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
 
-    // Firebase Configuration
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyAd1NSmpvfnDBfXkXhYgg_Q6W-9Ou9oycU",
       authDomain: "akki-ad30a.firebaseapp.com",
@@ -106,89 +178,93 @@
       projectId: "akki-ad30a",
       storageBucket: "akki-ad30a.appspot.com",
       messagingSenderId: "875707179283",
-      appId: "1:875707179283:web:5d9bd54a23c22e65db3ae6"
+      appId: "1:875707179283:web:5d9bd54a23c22e65db3ae6",
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const messaging = getMessaging(app);
+    const database = getDatabase(app);
 
-    // Room and User Setup
-    const room = prompt("Enter Room Code:");
-    const userName = prompt("Enter Your Name:");
+    const roomSection = document.getElementById("room-section");
+    const chatSection = document.getElementById("chat-section");
+    const chatBox = document.getElementById("chat-box");
+    const usernameInput = document.getElementById("username");
+    const roomCodeInput = document.getElementById("room-code");
+    const messageInput = document.getElementById("message");
+    const sendMessageButton = document.getElementById("send-message");
+    const voiceNoteButton = document.getElementById("voice-note-button");
 
-    if (!room || !userName) {
-      alert("Room and Name are required!");
-      location.reload();
-    }
+    let roomCode = "";
+    let username = "";
 
-    const messagesRef = ref(db, `rooms/${room}/messages`);
+    document.getElementById("join-room").addEventListener("click", () => {
+      username = usernameInput.value.trim();
+      roomCode = roomCodeInput.value.trim();
 
-    // Send a message
-    function sendMessage() {
-      const input = document.getElementById("messageInput");
-      const text = input.value.trim();
-      if (text !== "") {
-        push(messagesRef, {
-          user: userName,
-          message: text,
-          time: new Date().toLocaleTimeString(),
-        });
-        input.value = "";
+      if (!username || !roomCode) {
+        alert("Please enter your name and room code!");
+        return;
       }
-    }
 
-    // Listen for incoming messages
-    onChildAdded(messagesRef, (snapshot) => {
-      const data = snapshot.val();
-      const messagesDiv = document.getElementById("messages");
-      const messageDiv = document.createElement("div");
-      messageDiv.classList.add("message", data.user === userName ? "sent" : "received");
-      messageDiv.innerHTML = `
-        <div class="message-content">
-          <strong>${data.user}</strong>: ${data.message}
-          <small>${data.time}</small>
-        </div>
-      `;
-      messagesDiv.appendChild(messageDiv);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll
-    });
+      roomSection.style.display = "none";
+      chatSection.style.display = "flex";
 
-    // Request Notification Permission
-    Notification.requestPermission().then((permission) => {
-      if (permission === "granted") {
-        console.log("Notifications enabled!");
-        getToken(messaging, {
-          vapidKey: "BIYOJ_wpW21qqI7T3BEDcZyEUy_0Q-BSUWf_lLAT1kukFkMWurGTCsYRUe0GudDBBVhxP4GHSfjsiqPAEPVBjJk",
-        }).then((token) => {
-          console.log("FCM Token:", token);
-        });
-      }
-    });
-
-    // Receive Notifications
-    onMessage(messaging, (payload) => {
-      console.log("Message received: ", payload);
-      new Notification("AKKI - Dekho Dekho", {
-        body: payload.notification.body,
-        icon: "https://example.com/icon.png",
+      const messagesRef = ref(database, `rooms/${roomCode}/messages`);
+      onValue(messagesRef, (snapshot) => {
+        chatBox.innerHTML = "";
+        const messages = snapshot.val();
+        for (let id in messages) {
+          const { sender, text, timestamp } = messages[id];
+          const messageElement = document.createElement("div");
+          messageElement.classList.add("message", sender === username ? "sent" : "received");
+          messageElement.innerHTML = `
+            <span>${text}</span>
+            <span class="timestamp">${timestamp}</span>
+          `;
+          chatBox.appendChild(messageElement);
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
       });
     });
+
+    sendMessageButton.addEventListener("click", () => {
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      const messagesRef = ref(database, `rooms/${roomCode}/messages`);
+      const timestamp = new Date().toLocaleTimeString();
+      push(messagesRef, { sender: username, text: message, timestamp });
+      messageInput.value = "";
+    });
+
+    // Voice Note Functionality
+    let mediaRecorder;
+    let audioChunks = [];
+
+    voiceNoteButton.addEventListener("click", () => {
+      if (!mediaRecorder) {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = () => {
+              const audioURL = reader.result;
+              const messagesRef = ref(database, `rooms/${roomCode}/messages`);
+              const timestamp = new Date().toLocaleTimeString();
+              push(messagesRef, { sender: username, text: "🎤 Voice Note", audio: audioURL, timestamp });
+            };
+            audioChunks = [];
+          };
+          mediaRecorder.start();
+          alert("Recording voice note. Click again to stop.");
+        });
+      } else {
+        mediaRecorder.stop();
+        mediaRecorder = null;
+      }
+    });
   </script>
-</head>
-<body>
-  <header>
-    <h1>AKKI <small>@Made by Aadi</small></h1>
-  </header>
-  <div class="chat-container">
-    <div id="messages" class="messages"></div>
-    <div class="typing-area">
-      <input type="text" id="messageInput" placeholder="Type a message..." />
-      <button onclick="sendMessage()">
-        <i class="fas fa-paper-plane"></i>
-      </button>
-    </div>
-  </div>
 </body>
 </html>
