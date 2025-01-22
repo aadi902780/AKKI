@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Private Chat</title>
+    <title>AKKI Chat</title>
     <style>
-        /* General Styles */
+        /* WhatsApp Theme */
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom, #833ab4, #fd1d1d, #fcb045);
+            background: url('https://i.imgur.com/oS29tW9.jpg') no-repeat center center fixed;
+            background-size: cover;
             margin: 0;
             padding: 0;
-            color: #fff;
+            color: #000;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             height: 100vh;
         }
 
@@ -23,105 +24,91 @@
             font-size: 24px;
             font-weight: bold;
             margin: 20px 0;
+            color: #25d366;
+        }
+
+        #room-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #room-code {
+            width: 80%;
+            max-width: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        #join-room {
+            padding: 10px 20px;
+            background: #25d366;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+
+        #chat-section {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
         }
 
         #chat-box {
             width: 90%;
             max-width: 400px;
             height: 60%;
-            background: #ffffff;
-            color: #000;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
             overflow-y: scroll;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .message {
+            padding: 10px;
             margin: 10px 0;
-            padding: 10px 15px;
-            border-radius: 20px;
-            max-width: 70%;
         }
 
-        .message.me {
-            background-color: #e4f0f6;
-            color: #333;
-            align-self: flex-end;
-            text-align: right;
+        #message-input, #send-button {
+            margin: 5px 0;
         }
 
-        .message.them {
-            background-color: #f8e7e6;
-            color: #333;
-            align-self: flex-start;
-            text-align: left;
-        }
-
-        #username, #message {
+        #message-input {
             width: 80%;
             padding: 10px;
-            margin: 5px;
-            border-radius: 25px;
-            border: none;
-            outline: none;
-            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
 
-        #username {
-            background: #f5f5f5;
-            color: #000;
-            font-weight: bold;
-        }
-
-        #message {
-            background: #ffffff;
-            color: #000;
-        }
-
-        #send {
+        #send-button {
             padding: 10px 20px;
-            background: linear-gradient(to right, #833ab4, #fd1d1d, #fcb045);
+            background: #25d366;
             border: none;
-            border-radius: 25px;
+            border-radius: 5px;
             color: #fff;
-            font-size: 16px;
             cursor: pointer;
-            margin: 5px;
-        }
-
-        #send:hover {
-            opacity: 0.9;
-        }
-
-        /* Scrollbar Styling */
-        #chat-box::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        #chat-box::-webkit-scrollbar-thumb {
-            background: #fcb045;
-            border-radius: 10px;
-        }
-
-        #chat-box::-webkit-scrollbar-track {
-            background: #f5f5f5;
         }
     </style>
 </head>
 <body>
-    <h1>Private Chat</h1>
-    <input id="username" placeholder="Your Name" />
-    <div id="chat-box"></div>
-    <div>
-        <input id="message" placeholder="Type your message..." />
-        <button id="send">Send</button>
+    <h1>AKKI Chat</h1>
+    <div id="room-section">
+        <input type="text" id="room-code" placeholder="Enter Room Code" />
+        <button id="join-room">Join Room</button>
+    </div>
+    <div id="chat-section">
+        <div id="chat-box"></div>
+        <input type="text" id="message-input" placeholder="Type a message..." />
+        <button id="send-button">Send</button>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase -->
     <script type="module">
-        // Import the Firebase SDK
+        // Import Firebase SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
         import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
 
@@ -134,51 +121,62 @@
             storageBucket: "akki-ad30a.appspot.com",
             messagingSenderId: "875707179283",
             appId: "1:875707179283:web:5d9bd54a23c22e65db3ae6",
-            measurementId: "G-Z5XH4PJTRG"
         };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // Get input elements
-        const usernameInput = document.getElementById('username');
-        const messageInput = document.getElementById('message');
+        // Elements
+        const roomSection = document.getElementById('room-section');
+        const chatSection = document.getElementById('chat-section');
+        const roomCodeInput = document.getElementById('room-code');
         const chatBox = document.getElementById('chat-box');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
 
-        // Display messages
-        const displayMessage = (username, message, isMe) => {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
-            messageElement.classList.add(isMe ? 'me' : 'them');
-            messageElement.textContent = `${username}: ${message}`;
-            chatBox.appendChild(messageElement);
-            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
-        };
+        let currentRoom = '';
 
-        // Listen for new messages
-        const messagesRef = ref(database, 'messages/');
-        onValue(messagesRef, (snapshot) => {
-            chatBox.innerHTML = ''; // Clear the chatbox
-            const messages = snapshot.val();
-            const currentUser = usernameInput.value || 'Anonymous';
-            for (let id in messages) {
-                const { username, message } = messages[id];
-                const isMe = username === currentUser;
-                displayMessage(username, message, isMe);
+        // Join Room
+        document.getElementById('join-room').addEventListener('click', () => {
+            const roomCode = roomCodeInput.value.trim();
+            if (!roomCode) {
+                alert('Please enter a room code!');
+                return;
             }
+
+            currentRoom = roomCode;
+            roomSection.style.display = 'none';
+            chatSection.style.display = 'flex';
+
+            const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
+
+            // Listen for messages
+            onValue(messagesRef, (snapshot) => {
+                chatBox.innerHTML = '';
+                const messages = snapshot.val();
+                for (let id in messages) {
+                    const { username, text } = messages[id];
+                    const messageElement = document.createElement('div');
+                    messageElement.textContent = `${username}: ${text}`;
+                    chatBox.appendChild(messageElement);
+                }
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
         });
 
-        // Send message
-        document.getElementById('send').addEventListener('click', () => {
-            const username = usernameInput.value.trim();
+        // Send Message
+        sendButton.addEventListener('click', () => {
             const message = messageInput.value.trim();
-            if (username && message) {
-                push(messagesRef, { username: username, message: message });
-                messageInput.value = ''; // Clear the message input
-            } else {
-                alert('Please enter a username and message!');
-            }
+            if (!message) return;
+
+            const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
+            push(messagesRef, {
+                username: 'You', // Replace with dynamic username if required
+                text: message
+            });
+
+            messageInput.value = '';
         });
     </script>
 </body>
