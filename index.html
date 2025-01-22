@@ -25,6 +25,14 @@
       text-align: center;
       font-size: 24px;
       font-weight: bold;
+      position: relative;
+    }
+
+    header small {
+      font-size: 12px;
+      position: absolute;
+      right: 10px;
+      bottom: 5px;
     }
 
     #room-section {
@@ -149,7 +157,10 @@
   </style>
 </head>
 <body>
-  <header>AKKI</header>
+  <header>
+    AKKI
+    <small>Made by Aadi</small>
+  </header>
   <div id="room-section">
     <input type="text" id="username" placeholder="Enter your name">
     <input type="text" id="room-code" placeholder="Enter Room Code">
@@ -165,10 +176,11 @@
     </div>
   </div>
 
-  <!-- Firebase and Script -->
+  <!-- Firebase and Notification Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
     import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-messaging.js";
 
     // Firebase Config
     const firebaseConfig = {
@@ -183,6 +195,7 @@
 
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
+    const messaging = getMessaging(app);
 
     const roomSection = document.getElementById("room-section");
     const chatSection = document.getElementById("chat-section");
@@ -236,33 +249,20 @@
       messageInput.value = "";
     });
 
-    // Voice Note Functionality
-    let mediaRecorder;
-    let audioChunks = [];
+    // Notification Logic
+    getToken(messaging, {
+      vapidKey: "YOUR_VAPID_KEY",
+    }).then((token) => {
+      console.log("Token:", token);
+    });
 
-    voiceNoteButton.addEventListener("click", () => {
-      if (!mediaRecorder) {
-        navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-          mediaRecorder = new MediaRecorder(stream);
-          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-          mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
-            reader.onloadend = () => {
-              const audioURL = reader.result;
-              const messagesRef = ref(database, `rooms/${roomCode}/messages`);
-              const timestamp = new Date().toLocaleTimeString();
-              push(messagesRef, { sender: username, text: "🎤 Voice Note", audio: audioURL, timestamp });
-            };
-            audioChunks = [];
-          };
-          mediaRecorder.start();
-          alert("Recording voice note. Click again to stop.");
+    onMessage(messaging, (payload) => {
+      const { notification } = payload;
+      if (notification) {
+        new Notification(notification.title, {
+          body: notification.body,
+          icon: notification.icon,
         });
-      } else {
-        mediaRecorder.stop();
-        mediaRecorder = null;
       }
     });
   </script>
