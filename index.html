@@ -86,7 +86,7 @@
       margin-right: 10px;
     }
 
-    #message-input button, #voice-note-button {
+    #message-input button {
       background-color: #25d366;
       color: white;
       border: none;
@@ -97,7 +97,20 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      margin-left: 5px;
+    }
+
+    #voice-note-button {
+      background-color: #34b7f1;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-right: 5px;
     }
 
     .message {
@@ -146,9 +159,9 @@
   <div id="chat-section" style="display:none;">
     <div id="chat-box"></div>
     <div id="message-input">
+      <button id="voice-note-button">🎤</button>
       <input type="text" id="message" placeholder="Type a message">
       <button id="send-message">➤</button>
-      <button id="voice-note-button">🎤</button>
     </div>
   </div>
 
@@ -223,8 +236,34 @@
       messageInput.value = "";
     });
 
+    // Voice Note Functionality
+    let mediaRecorder;
+    let audioChunks = [];
+
     voiceNoteButton.addEventListener("click", () => {
-      alert("Voice note feature coming soon!");
+      if (!mediaRecorder) {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = () => {
+              const audioURL = reader.result;
+              const messagesRef = ref(database, `rooms/${roomCode}/messages`);
+              const timestamp = new Date().toLocaleTimeString();
+              push(messagesRef, { sender: username, text: "🎤 Voice Note", audio: audioURL, timestamp });
+            };
+            audioChunks = [];
+          };
+          mediaRecorder.start();
+          alert("Recording voice note. Click again to stop.");
+        });
+      } else {
+        mediaRecorder.stop();
+        mediaRecorder = null;
+      }
     });
   </script>
 </body>
